@@ -1,11 +1,17 @@
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { IoClose } from 'react-icons/io5';
-import Signup from './Signup';
 import ResetPassword from './ResetPassword';
+import { authModalAtom } from '@/atoms/authModalAtom';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import Login from './Login';
+import Register from './Register';
 
 interface AuthModalProps {}
 
 const AuthModal: FC<AuthModalProps> = () => {
+  const closeModal = useCloseModal();
+  const authModal = useRecoilValue(authModalAtom);
+
   return (
     <>
       <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60"></div>
@@ -17,12 +23,11 @@ const AuthModal: FC<AuthModalProps> = () => {
                 type="button"
                 className="bg-transparent  rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-800 hover:text-white text-white"
               >
-                <IoClose className="h-5 w-5" />
+                <IoClose className="h-5 w-5" onClick={closeModal} />
               </button>
             </div>
 
-            {/* <Signup /> */}
-            <ResetPassword />
+            {getModalContent(authModal.type)}
           </div>
         </div>
       </div>
@@ -31,3 +36,32 @@ const AuthModal: FC<AuthModalProps> = () => {
 };
 
 export default AuthModal;
+
+function getModalContent(type: string) {
+  switch (type) {
+    case 'login':
+      return <Login />;
+    case 'register':
+      return <Register />;
+    case 'resetPassword':
+      return <ResetPassword />;
+    default:
+      return <></>;
+  }
+}
+
+function useCloseModal() {
+  const setAuthModal = useSetRecoilState(authModalAtom);
+
+  const closeModal = () => setAuthModal((prev) => ({ ...prev, isOpen: false }));
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeModal();
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [closeModal]);
+
+  return closeModal;
+}
