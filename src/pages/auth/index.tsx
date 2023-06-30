@@ -1,13 +1,26 @@
 import { authModalAtom } from '@/atoms/authModalAtom';
 import AuthModal from '@/components/Modals/AuthModal';
 import Navbar from '@/components/Navbar/Navbar';
-import { FC } from 'react';
+import { auth } from '@/firebase/firebase';
+import { useRouter } from 'next/router';
+import { FC, useEffect, useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { useRecoilValue } from 'recoil';
 
 interface PageProps {}
 
 const AuthPage: FC<PageProps> = () => {
   const authModal = useRecoilValue(authModalAtom);
+  const [user, loading, error] = useAuthState(auth);
+  const [pageLoading, setPageLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) router.push('/');
+    if (!loading && !user) setPageLoading(false);
+  }, [user, router, loading]);
+
+  if (pageLoading) return null;
 
   return (
     <div className=" bg-gradient-to-b from-gray-600 to-black h-screen relative">

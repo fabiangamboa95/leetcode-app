@@ -1,5 +1,5 @@
 import { authModalAtom } from '@/atoms/authModalAtom';
-import { FC, useEffect, useState } from 'react';
+import { ChangeEvent, FC, FormEvent, useEffect, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
 import { auth } from '@/firebase/firebase';
@@ -9,12 +9,12 @@ interface Register {}
 
 const Register: FC<Register> = () => {
   const setAuthModalState = useSetRecoilState(authModalAtom);
-  const [inputs, seInputs] = useState({
+  const [inputs, setInputs] = useState({
     email: '',
     displayName: '',
     password: '',
   });
-  const [createUserWithEmailAndPassword, user, loading, error] =
+  const [createUserWithEmailAndPassword, _, loading, error] =
     useCreateUserWithEmailAndPassword(auth);
   const router = useRouter();
 
@@ -22,25 +22,28 @@ const Register: FC<Register> = () => {
     if (error) alert(error.message);
   }, [error]);
 
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setInputs({ ...inputs, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!inputs.email || !inputs.displayName || !inputs.password)
+      return alert('Please fill all the fields');
+    try {
+      const newUser = await createUserWithEmailAndPassword(
+        inputs.email,
+        inputs.password
+      );
+      if (!newUser) return;
+      router.push('/');
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
   return (
-    <form
-      className=" space-y-6 px-6 pb-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        if (!inputs.email || !inputs.displayName || !inputs.password)
-          return alert('Please fill all the fields');
-        try {
-          const newUser = await createUserWithEmailAndPassword(
-            inputs.email,
-            inputs.password
-          );
-          if (!newUser) return;
-          router.push('/');
-        } catch (error: any) {
-          alert(error.message);
-        }
-      }}
-    >
+    <form className=" space-y-6 px-6 pb-4" onSubmit={handleSubmit}>
       <h3 className="text-xl font-medium text-white">Register to LeetClone</h3>
       <div>
         <label
@@ -50,7 +53,7 @@ const Register: FC<Register> = () => {
           Your Email
         </label>
         <input
-          onChange={(e) => seInputs({ ...inputs, email: e.target.value })}
+          onChange={handleInputChange}
           type="email"
           name="email"
           id="email"
@@ -67,7 +70,7 @@ const Register: FC<Register> = () => {
           Display Name
         </label>
         <input
-          onChange={(e) => seInputs({ ...inputs, displayName: e.target.value })}
+          onChange={handleInputChange}
           type="displayName"
           name="displayName"
           id="displayName"
@@ -84,7 +87,7 @@ const Register: FC<Register> = () => {
           Your Password
         </label>
         <input
-          onChange={(e) => seInputs({ ...inputs, password: e.target.value })}
+          onChange={handleInputChange}
           type="password"
           name="password"
           id="password"
