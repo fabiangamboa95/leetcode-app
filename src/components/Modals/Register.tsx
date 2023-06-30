@@ -1,14 +1,46 @@
 import { authModalAtom } from '@/atoms/authModalAtom';
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
+import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { auth } from '@/firebase/firebase';
+import { useRouter } from 'next/router';
 
 interface Register {}
 
 const Register: FC<Register> = () => {
   const setAuthModalState = useSetRecoilState(authModalAtom);
+  const [inputs, seInputs] = useState({
+    email: '',
+    displayName: '',
+    password: '',
+  });
+  const [createUserWithEmailAndPassword, user, loading, error] =
+    useCreateUserWithEmailAndPassword(auth);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (error) alert(error.message);
+  }, [error]);
 
   return (
-    <form className=" space-y-6 px-6 pb-4">
+    <form
+      className=" space-y-6 px-6 pb-4"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!inputs.email || !inputs.displayName || !inputs.password)
+          return alert('Please fill all the fields');
+        try {
+          const newUser = await createUserWithEmailAndPassword(
+            inputs.email,
+            inputs.password
+          );
+          if (!newUser) return;
+          router.push('/');
+        } catch (error: any) {
+          alert(error.message);
+        }
+      }}
+    >
       <h3 className="text-xl font-medium text-white">Register to LeetClone</h3>
       <div>
         <label
@@ -18,6 +50,7 @@ const Register: FC<Register> = () => {
           Your Email
         </label>
         <input
+          onChange={(e) => seInputs({ ...inputs, email: e.target.value })}
           type="email"
           name="email"
           id="email"
@@ -34,6 +67,7 @@ const Register: FC<Register> = () => {
           Display Name
         </label>
         <input
+          onChange={(e) => seInputs({ ...inputs, displayName: e.target.value })}
           type="displayName"
           name="displayName"
           id="displayName"
@@ -50,6 +84,7 @@ const Register: FC<Register> = () => {
           Your Password
         </label>
         <input
+          onChange={(e) => seInputs({ ...inputs, password: e.target.value })}
           type="password"
           name="password"
           id="password"
@@ -62,7 +97,7 @@ const Register: FC<Register> = () => {
         type="submit"
         className="w-full text-white focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-brand-orange hover:bg-brand-orange-s"
       >
-        Register
+        {loading ? 'Loading...' : 'Register'}
       </button>
 
       <div className=" text-sm font-medium text-gray-500">
