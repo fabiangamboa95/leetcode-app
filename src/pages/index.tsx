@@ -3,12 +3,13 @@ import ProblemsTable from '@/components/ProblemsTable/ProblemsTable';
 import { IoClose } from 'react-icons/io5';
 import YouTube from 'react-youtube';
 import { problemsYoutubeModalAtom } from '@/atoms/problemsYoutubeModalAtom';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { useEffect } from 'react';
 
 export default function Home() {
-  const problemYoutubeModal = useRecoilValue(problemsYoutubeModalAtom);
-  const setProblemYoutubeModal = useSetRecoilState(problemsYoutubeModalAtom);
+  const [problemYoutubeModal, setProblemYoutubeModal] = useRecoilState(
+    problemsYoutubeModalAtom
+  );
 
   const closeModal = () =>
     setProblemYoutubeModal({ isOpen: false, videoId: '' });
