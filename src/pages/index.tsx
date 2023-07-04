@@ -1,10 +1,26 @@
-import { Inter } from 'next/font/google';
 import Topbar from '@/components/Topbar/Topbar';
 import ProblemsTable from '@/components/ProblemsTable/ProblemsTable';
-
-const inter = Inter({ subsets: ['latin'] });
+import { IoClose } from 'react-icons/io5';
+import YouTube from 'react-youtube';
+import { problemsYoutubeModalAtom } from '@/atoms/problemsYoutubeModalAtom';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const problemYoutubeModal = useRecoilValue(problemsYoutubeModalAtom);
+  const setProblemYoutubeModal = useSetRecoilState(problemsYoutubeModalAtom);
+
+  const closeModal = () =>
+    setProblemYoutubeModal({ isOpen: false, videoId: '' });
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeModal();
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [closeModal]);
+
   return (
     <main className=" bg-dark-layer-2 min-h-screen">
       <Topbar />
@@ -33,6 +49,31 @@ export default function Home() {
 
           <ProblemsTable />
         </table>
+
+        {problemYoutubeModal.isOpen && (
+          <div className="fixed top-0 left-0 h-screen w-screen flex items-center justify-center">
+            <div
+              className="bg-black z-10 opacity-70 top-0 left-0 w-screen h-screen absolute"
+              onClick={closeModal}
+            />
+            <div className="w-full z-50 px-6 relative max-w-4xl">
+              <div className="w-full h-full flex items-center justify-center relative">
+                <div className="w-full relative">
+                  <IoClose
+                    fontSize="35"
+                    className="cursor-pointer absolute -top-16 right-0 text-gray-300"
+                    onClick={closeModal}
+                  />
+                  <YouTube
+                    videoId={problemYoutubeModal.videoId}
+                    loading="lazy"
+                    iframeClassName="w-full min-h-[500px]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
