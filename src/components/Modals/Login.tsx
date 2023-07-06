@@ -3,6 +3,7 @@ import { auth } from '@/firebase/firebase';
 import { useRouter } from 'next/router';
 import { ChangeEvent, FC, FormEvent, useEffect, useState } from 'react';
 import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { toast } from 'react-toastify';
 import { useSetRecoilState } from 'recoil';
 
 interface LoginProps {}
@@ -15,7 +16,12 @@ const Login: FC<LoginProps> = () => {
     useSignInWithEmailAndPassword(auth);
 
   useEffect(() => {
-    if (error) alert(error.message);
+    if (error)
+      toast.error(error.message, {
+        position: 'top-center',
+        autoClose: 3000,
+        theme: 'dark',
+      });
   }, [error]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {

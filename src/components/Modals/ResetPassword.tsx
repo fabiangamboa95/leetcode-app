@@ -1,10 +1,38 @@
-import { FC } from 'react';
+import { auth } from '@/firebase/firebase';
+import { FC, useEffect, useState } from 'react';
+import { useSendPasswordResetEmail } from 'react-firebase-hooks/auth';
+import { toast } from 'react-toastify';
 
 interface ResetPasswordProps {}
 
 const ResetPassword: FC<ResetPasswordProps> = () => {
+  const [email, setEmail] = useState('');
+  const [sendPasswordResetEmail, sending, error] =
+    useSendPasswordResetEmail(auth);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const success = await sendPasswordResetEmail(email);
+    if (success) {
+      toast.success('Password reset email sent', {
+        position: 'top-center',
+        autoClose: 3000,
+        theme: 'dark',
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (error) {
+      alert(error.message);
+    }
+  }, [error]);
+
   return (
-    <form className="space-y-6 px-6 lg:px-8 pb-4 sm:pb-8">
+    <form
+      className="space-y-6 px-6 lg:px-8 pb-4 sm:pb-8"
+      onSubmit={handleSubmit}
+    >
       <h3 className="text-xl font-medium text-white">Reset Password</h3>
       <p className=" text-sm text-white">
         Forgotten your password? Enter your email address below, and we'll send
